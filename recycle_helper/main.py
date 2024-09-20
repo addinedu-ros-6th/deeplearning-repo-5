@@ -14,7 +14,10 @@ class WindowClass(QMainWindow, from_class):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        
+
+        # Set background image for label
+        self.set_background_image()
+
         # 폰트 로드
         self.load_custom_font()
 
@@ -34,7 +37,11 @@ class WindowClass(QMainWindow, from_class):
         self.classify_Button.clicked.connect(self.recycle_helper_window)
         self.tip_Button.clicked.connect(self.show_tip)
         self.help_Button.clicked.connect(self.show_help)
-        self.search_Button
+
+    def set_background_image(self):
+        pixmap = QPixmap("img_src/background_pixel_art.jpg")
+        self.label.setPixmap(pixmap.scaled(self.label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.label.setScaledContents(True)
 
     def load_custom_font(self):
         # 폰트 로드
@@ -51,7 +58,6 @@ class WindowClass(QMainWindow, from_class):
         self.help_Button.setFont(self.font)
         self.tip_Button.setFont(self.font)
         self.classify_Button.setFont(self.font)
-        self.search_Button.setFont(self.font)
 
     def show_tip(self):
         if self.tip_Label.isVisible():
