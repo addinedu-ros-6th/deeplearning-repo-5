@@ -50,7 +50,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="stop_button">
+  <widget class="QPushButton" name="refresh_Button">
    <property name="geometry">
     <rect>
      <x>10</x>
