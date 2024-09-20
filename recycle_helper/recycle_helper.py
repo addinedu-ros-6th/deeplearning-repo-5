@@ -104,40 +104,40 @@ class WebcamServerApp(QWidget):
 
         self.button_images = {
             'plastic_Button': {
-                'initial': '/home/jun/dev_ws/dl_project/img_src/pixelated_trash_can_by.jpeg',
-                'hover': '/home/jun/dev_ws/dl_project/img_src/trash_can_3.jpg',
-                'clicked': '/home/jun/dev_ws/dl_project/img_src/pixelated_opened_trash_can_by.jpeg'
+                'initial': 'img_src/pixelated_trash_can_by.jpeg',
+                'hover': 'img_src/trash_can_3.jpg',
+                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
             },
             'can_Button': {
-                'initial': '/home/jun/dev_ws/dl_project/img_src/pixelated_trash_can_bw.jpeg',
-                'hover': '/home/jun/dev_ws/dl_project/img_src/trash_can_3.jpg',
-                'clicked': '/home/jun/dev_ws/dl_project/img_src/pixelated_opened_trash_can_by.jpeg'
+                'initial': 'img_src/pixelated_trash_can_bw.jpeg',
+                'hover': 'img_src/trash_can_3.jpg',
+                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
             },
             'paper_Button': {
-                'initial': '/home/jun/dev_ws/dl_project/img_src/pixelated_trash_can_br.jpeg',
-                'hover': '/home/jun/dev_ws/dl_project/img_src/trash_can_3.jpg',
-                'clicked': '/home/jun/dev_ws/dl_project/img_src/pixelated_opened_trash_can_by.jpeg'
+                'initial': 'img_src/pixelated_trash_can_br.jpeg',
+                'hover': 'img_src/trash_can_3.jpg',
+                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
             },
             'styrofoam_Button': {
-                'initial': '/home/jun/dev_ws/dl_project/img_src/pixelated_trash_can_bm.jpeg',
-                'hover': '/home/jun/dev_ws/dl_project/img_src/trash_can_3.jpg',
-                'clicked': '/home/jun/dev_ws/dl_project/img_src/pixelated_opened_trash_can_by.jpeg'
+                'initial': 'img_src/pixelated_trash_can_bm.jpeg',
+                'hover': 'img_src/trash_can_3.jpg',
+                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
             },
             'glass_Button': {
-                'initial': '/home/jun/dev_ws/dl_project/img_src/pixelated_trash_can_bg.jpeg',
-                'hover': '/home/jun/dev_ws/dl_project/img_src/trash_can_3.jpg',
-                'clicked': '/home/jun/dev_ws/dl_project/img_src/pixelated_opened_trash_can_by.jpeg'
+                'initial': 'img_src/pixelated_trash_can_bg.jpeg',
+                'hover': 'img_src/trash_can_3.jpg',
+                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
             },
             'vinyl_Button': {
-                'initial': '/home/jun/dev_ws/dl_project/img_src/pixelated_trash_can_bb.jpeg',
-                'hover': '/home/jun/dev_ws/dl_project/img_src/trash_can_3.jpg',
-                'clicked': '/home/jun/dev_ws/dl_project/img_src/pixelated_opened_trash_can_by.jpeg'
+                'initial': 'img_src/pixelated_trash_can_bb.jpeg',
+                'hover': 'img_src/trash_can_3.jpg',
+                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
             }
         }
 
         self.original_size = (100, 100)  # Original button size
         self.hover_size = QSize(150, 150)  # Size when hovering
-        self.hover_gif_path = "/home/jun/dev_ws/dl_project/img_src/agree.gif"  # GIF path
+        self.hover_gif_path = "img_src/agree.gif"  # GIF path
 
         self.set_initial_images()
 
@@ -175,7 +175,7 @@ class WebcamServerApp(QWidget):
         self.comment_Label.setVisible(True)
         self.comment_Label.setStyleSheet("font-size: 15pt; font-family: 'DungGeunMo';")
 
-        self.loading_movie = QMovie("/home/jun/dev_ws/dl_project/img_src/cat.gif")
+        self.loading_movie = QMovie("img_src/cat.gif")
         self.main_Label.setMovie(self.loading_movie)
         self.loading_movie.start()
 
@@ -200,7 +200,7 @@ class WebcamServerApp(QWidget):
         self.initialize_ui()  # Re-initialize everything
 
     def restart_gif(self):
-        self.loading_movie = QMovie("/home/jun/dev_ws/dl_project/img_src/cat.gif")
+        self.loading_movie = QMovie("img_src/cat.gif")
         self.main_Label.setMovie(self.loading_movie)
         self.loading_movie.start()
         self.main_Label.repaint()
