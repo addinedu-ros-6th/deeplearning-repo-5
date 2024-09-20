@@ -135,6 +135,12 @@
      <string/>
     </property>
    </widget>
+   <zorder>label</zorder>
+   <zorder>classify_Button</zorder>
+   <zorder>tip_Button</zorder>
+   <zorder>help_Button</zorder>
+   <zorder>tip_Label</zorder>
+   <zorder>search_Button</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -148,5 +154,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <resources/>
  <connections/>
 </ui>
