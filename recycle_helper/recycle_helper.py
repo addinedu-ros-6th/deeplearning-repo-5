@@ -154,7 +154,7 @@ class WebcamServerApp(QWidget):
             button.installEventFilter(self)
 
         self.main_Label = self.findChild(QLabel, 'main_Label')
-        self.stop_button = self.findChild(QPushButton, 'stop_button')
+        self.refresh_Button = self.findChild(QPushButton, 'refresh_Button')
 
         self.tips = [
             "알고 있으십니까?\n빨대는 일반쓰레기입니다.",
@@ -179,7 +179,7 @@ class WebcamServerApp(QWidget):
         self.main_Label.setMovie(self.loading_movie)
         self.loading_movie.start()
 
-        self.stop_button.clicked.connect(self.stop_server)
+        self.refresh_Button.clicked.connect(self.refresh)
 
     def set_initial_images(self):
         for button_name, images in self.button_images.items():
@@ -192,12 +192,9 @@ class WebcamServerApp(QWidget):
         button.setIcon(QIcon(pixmap))
         button.setIconSize(pixmap.size())
 
-    def stop_server(self):
-        if self.server_thread:
-            self.server_thread.stop()
-            self.server_thread.wait()  # Wait for the thread to stop completely
-
-        self.initialize_ui()  # Re-initialize everything
+    def refresh(self):
+        random_tip = random.choice(self.tips)
+        self.comment_Label.setText(random_tip)
 
     def restart_gif(self):
         self.loading_movie = QMovie("img_src/cat.gif")
