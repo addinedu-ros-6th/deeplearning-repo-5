@@ -5,7 +5,7 @@ import pickle
 from ultralytics import YOLO
 
 # YOLO 모델 로드
-model = YOLO("/home/jun/dev_ws/yolov5/yolov8n.pt")
+model = YOLO("best.pt")
 
 # 서버 설정
 server_ip = '192.168.0.214'  # 서버의 실제 IP 주소
