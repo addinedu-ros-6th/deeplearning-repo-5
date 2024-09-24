@@ -103,7 +103,7 @@
   <widget class="QLabel" name="comment_Label">
    <property name="geometry">
     <rect>
-     <x>200</x>
+     <x>210</x>
      <y>450</y>
      <width>320</width>
      <height>120</height>
@@ -127,14 +127,33 @@
   <widget class="QPushButton" name="dump_Button">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>620</y>
+     <x>320</x>
+     <y>690</y>
      <width>89</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
     <string>버리기</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="sign_Label">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>620</y>
+     <width>371</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
  </widget>
