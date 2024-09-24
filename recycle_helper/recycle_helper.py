@@ -10,6 +10,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer, Qt, QEvent, QSize
 from PyQt5.QtGui import QPixmap, QIcon, QMovie, QFont, QFontDatabase, QImage
 import torch
+import mysql.connector
+from datetime import datetime
 
 class ServerThread(QThread):
     update_frame = pyqtSignal(object)
@@ -80,81 +82,17 @@ class WebcamServerApp(QWidget):
 
         self.gif_Labels = []  # 전역 변수로 사용하기 위해 클래스 변수로 초기화
         self.load_custom_font()
-        
-        # Initialize buttons and labels
-        self.initialize_ui()
 
         # Initialize server thread
         self.server_thread = ServerThread()
         self.server_thread.update_frame.connect(self.update_frame)
         self.server_thread.start()
 
-    def initialize_ui(self):
-        self.gif_Labels = [
-            self.plastic_gif_Label, self.can_gif_Label, self.paper_gif_Label,
-            self.styrofoam_gif_Label, self.glass_gif_Label, self.vinyl_gif_Label
-        ]
-        
-        self.plastic_Label.setText('플라스틱')
-        self.can_Label.setText('캔')
-        self.paper_Label.setText('종이')
-        self.styrofoam_Label.setText('스티로폼')
-        self.glass_Label.setText('유리')
-        self.vinyl_Label.setText('비닐')
-
-        self.button_images = {
-            'plastic_Button': {
-                'initial': 'img_src/pixelated_trash_can_by.jpeg',
-                'hover': 'img_src/trash_can_3.jpg',
-                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
-            },
-            'can_Button': {
-                'initial': 'img_src/pixelated_trash_can_bw.jpeg',
-                'hover': 'img_src/trash_can_3.jpg',
-                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
-            },
-            'paper_Button': {
-                'initial': 'img_src/pixelated_trash_can_br.jpeg',
-                'hover': 'img_src/trash_can_3.jpg',
-                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
-            },
-            'styrofoam_Button': {
-                'initial': 'img_src/pixelated_trash_can_bm.jpeg',
-                'hover': 'img_src/trash_can_3.jpg',
-                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
-            },
-            'glass_Button': {
-                'initial': 'img_src/pixelated_trash_can_bg.jpeg',
-                'hover': 'img_src/trash_can_3.jpg',
-                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
-            },
-            'vinyl_Button': {
-                'initial': 'img_src/pixelated_trash_can_bb.jpeg',
-                'hover': 'img_src/trash_can_3.jpg',
-                'clicked': 'img_src/pixelated_opened_trash_can_by.jpeg'
-            }
-        }
-
-        self.original_size = (100, 100)  # Original button size
-        self.hover_size = QSize(150, 150)  # Size when hovering
-        self.hover_gif_path = "img_src/agree.gif"  # GIF path
-
-        self.set_initial_images()
-
-        for button_name in self.button_images.keys():
-            button = getattr(self, button_name)
-            gif_label = QLabel(self)
-            gif_label.setFixedSize(self.hover_size)
-            gif_label.setStyleSheet("background: transparent;")
-            gif_label.hide()
-            self.gif_Labels.append(gif_label)
-
-        for button_name in self.button_images.keys():
-            button = getattr(self, button_name)
-            button.installEventFilter(self)
+        self.dump_Button.setDisabled(True)
+        self.dump_Button.clicked.connect(self.on_dump_button_clicked)
 
         self.main_Label = self.findChild(QLabel, 'main_Label')
-        self.refresh_Button = self.findChild(QPushButton, 'refresh_Button')
+        self.refresh_button = self.findChild(QPushButton, 'refresh_button')
 
         self.tips = [
             "알고 있으십니까?\n빨대는 일반쓰레기입니다.",
@@ -179,57 +117,63 @@ class WebcamServerApp(QWidget):
         self.main_Label.setMovie(self.loading_movie)
         self.loading_movie.start()
 
-        self.refresh_Button.clicked.connect(self.refresh)
+        self.refresh_Button.clicked.connect(self.refresh_comment)
 
-    def set_initial_images(self):
-        for button_name, images in self.button_images.items():
-            button = getattr(self, button_name)
-            self.set_button_image(button, images['initial'])
-
-    def set_button_image(self, button, image_path):
-        pixmap = QPixmap(image_path)
-        pixmap = pixmap.scaled(button.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        button.setIcon(QIcon(pixmap))
-        button.setIconSize(pixmap.size())
-
-    def refresh(self):
+    def refresh_comment(self):
         random_tip = random.choice(self.tips)
         self.comment_Label.setText(random_tip)
-
-    def restart_gif(self):
-        self.loading_movie = QMovie("img_src/cat.gif")
-        self.main_Label.setMovie(self.loading_movie)
-        self.loading_movie.start()
-        self.main_Label.repaint()
+        self.comment_Label.setWordWrap(True)
 
     def update_frame(self, frame):
         frame_ = frame[0].plot()
-        cls_ = frame[0].boxes.cls.item()
+        cls_ = int(frame[0].boxes.cls.item())
         h, w, ch = frame_.shape
         result = cv2.cvtColor(frame_, cv2.COLOR_BGR2RGB)
         q_img = QImage(result.data, w, h, ch * w, QImage.Format_RGB888)
         self.main_Label.setPixmap(QPixmap.fromImage(q_img))
         self.sub_Label.setVisible(False)
         self.comment_Label.setVisible(False)
-        self.classification(cls_)
 
-    def classification(self, index):
-        buttons = [
-            self.plastic_Button, 
-            self.can_Button, 
-            self.paper_Button, 
-            self.styrofoam_Button, 
-            self.glass_Button, 
-            self.vinyl_Button
-        ]
+        self.current_classification = int(cls_)
+        if self.current_classification != 0 and self.current_classification != 4:
+            self.dump_Button.setEnabled(True)
+        else:
+            self.dump_Button.setDisabled(True)
 
-        # Disable all buttons first
-        for button in buttons:
-            button.setDisabled(True)
-        
-        # Enable only the button corresponding to the index
-        if 0 <= int(index) < len(buttons):
-            buttons[int(index)].setDisabled(False)
+    def on_dump_button_clicked(self):
+            self.insert_data(self.current_classification)  # 저장된 분류를 데이터베이스에 삽입
+
+    def insert_data(self, classification):
+        if classification == 1:
+            classification = '유리'
+        elif classification == 2:
+            classification = '캔'
+        elif classification == 3:
+            classification = '플라스틱'
+        try:
+            connection = mysql.connector.connect(
+                host="database-1.cpwy8c66woni.ap-northeast-2.rds.amazonaws.com",
+                port=3306,
+                user="admin",
+                password="lolmh0211",
+                database="DL_project"
+            )
+
+            cursor = connection.cursor()
+            current_time = datetime.now()
+            query = "INSERT INTO trash (time, class) VALUES (%s, %s)"
+            cursor.execute(query, (current_time, classification))
+
+            connection.commit()
+            print(f"{classification}가 데이터베이스에 추가되었습니다.")
+
+        except mysql.connector.Error as err:
+            print(f"데이터베이스 오류: {err}")
+
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
 
     def load_custom_font(self):
         font_id = QFontDatabase.addApplicationFont('font/DungGeunMo.ttf')
@@ -239,55 +183,7 @@ class WebcamServerApp(QWidget):
 
     def set_font_to_widgets(self):
         self.comment_Label.setFont(self.font)
-        self.plastic_Label.setFont(self.font)
-        self.can_Label.setFont(self.font)
-        self.paper_Label.setFont(self.font)
-        self.styrofoam_Label.setFont(self.font)
-        self.glass_Label.setFont(self.font)
-        self.vinyl_Label.setFont(self.font)
-
-    def show_gif(self, button_name, button):
-        gif_label = self.get_gif_label_from_button(button_name)
-        if gif_label:
-            gif_movie = QMovie(self.hover_gif_path)
-            gif_movie.setScaledSize(gif_label.size())
-            gif_label.setMovie(gif_movie)
-            gif_movie.start()
-            gif_label.show()
-
-    def hide_gif(self, button_name):
-        gif_label = self.get_gif_label_from_button(button_name)
-        if gif_label:
-            gif_label.movie().stop()
-            gif_label.hide()
-
-    def get_gif_label_from_button(self, button_name):
-        for gif_label in self.gif_Labels:
-            if button_name.split('_')[0] in str(gif_label.objectName()):
-                return gif_label
-        return None
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.Enter:
-            # Check if the object is a button and if it is enabled
-            if obj.isEnabled():
-                button_name = self.get_button_name_from_widget(obj)
-                if button_name:
-                    self.show_gif(button_name, obj)
-        elif event.type() == QEvent.Leave:
-            # Check if the object is a button and if it is enabled
-            if obj.isEnabled():
-                button_name = self.get_button_name_from_widget(obj)
-                if button_name:
-                    self.hide_gif(button_name)
-
-        return super().eventFilter(obj, event)
-
-    def get_button_name_from_widget(self, widget):
-        for button_name, button in self.__dict__.items():
-            if button == widget:
-                return button_name
-        return None
+        self.dump_Button.setFont(self.font)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
