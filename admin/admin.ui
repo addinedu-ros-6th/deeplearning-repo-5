@@ -14,7 +14,7 @@
    <string>쓰레기 분리수거 프로그램</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="submit_Button">
+   <widget class="QPushButton" name="refresh_Button">
     <property name="geometry">
      <rect>
       <x>550</x>
@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>그래프 그리기</string>
+     <string>새로고침</string>
     </property>
    </widget>
    <widget class="QLabel" name="chart_container">
