@@ -161,7 +161,7 @@ class WebcamServerApp(QWidget):
 
             cursor = connection.cursor()
             current_time = datetime.now()
-            query = "INSERT INTO trash (time, class) VALUES (%s, %s)"
+            query = "INSERT INTO LOG (time, class) VALUES (%s, %s)"
             cursor.execute(query, (current_time, classification))
 
             connection.commit()
