@@ -126,7 +126,11 @@ class WebcamServerApp(QWidget):
 
     def update_frame(self, frame):
         frame_ = frame[0].plot()
-        cls_ = int(frame[0].boxes.cls.item())
+        if frame[0].boxes.cls.shape[0] == 1:
+            self.current_classification = int(frame[0].boxes.cls.item())
+            self.confidence = frame[0].boxes.conf.item()
+            print(self.current_classification, self.confidence)
+
         h, w, ch = frame_.shape
         result = cv2.cvtColor(frame_, cv2.COLOR_BGR2RGB)
         q_img = QImage(result.data, w, h, ch * w, QImage.Format_RGB888)
@@ -134,21 +138,29 @@ class WebcamServerApp(QWidget):
         self.sub_Label.setVisible(False)
         self.comment_Label.setVisible(False)
 
-        self.current_classification = int(cls_)
-        if self.current_classification != 0 and self.current_classification != 4:
+        if self.current_classification in (1, 2, 3):
             self.dump_Button.setEnabled(True)
-        else:
+            self.sign_Label.setText(" ")
+        elif self.current_classification == 0:
+            self.sign_Label.setText("라벨을 제거해 주세요")
+            self.sign_Label.setWordWrap(True)
+            self.sign_Label.setVisible(True)
+            self.sign_Label.setStyleSheet("font-size: 15pt; font-family: 'DungGeunMo';")
             self.dump_Button.setDisabled(True)
+
 
     def on_dump_button_clicked(self):
             self.insert_data(self.current_classification)  # 저장된 분류를 데이터베이스에 삽입
 
     def insert_data(self, classification):
         if classification == 1:
+            classification_num = 1
             classification = '유리'
         elif classification == 2:
+            classification_num = 2
             classification = '캔'
         elif classification == 3:
+            classification_num = 3
             classification = '플라스틱'
         try:
             connection = mysql.connector.connect(
@@ -161,11 +173,11 @@ class WebcamServerApp(QWidget):
 
             cursor = connection.cursor()
             current_time = datetime.now()
-            query = "INSERT INTO LOG (time, class) VALUES (%s, %s)"
-            cursor.execute(query, (current_time, classification))
+            query = "INSERT INTO log (datetime, type_id, status_id, confidence) VALUES (%s, %s, %s, %s)"
+            cursor.execute(query, (current_time, classification_num, 0, self.confidence))
 
             connection.commit()
-            print(f"{classification}가 데이터베이스에 추가되었습니다.")
+            print(f"{classification}(이)가 데이터베이스에 추가되었습니다.")
 
         except mysql.connector.Error as err:
             print(f"데이터베이스 오류: {err}")
