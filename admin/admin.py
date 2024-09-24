@@ -21,21 +21,23 @@ class TrashSortingApp(QMainWindow):
         self.log_text_edit = self.findChild(QTextEdit, 'log_text_edit')  # 로그 텍스트 박스 찾기
 
         # 버튼 클릭 이벤트 연결
-        self.submit_Button.clicked.connect(self.plot_chart)
-        self.reset_Button.clicked.connect(self.reset_chart)
+        self.refresh_Button.clicked.connect(self.plot_chart)
+        self.reset_Button.clicked.connect(self.reset)
 
         # 초기 데이터 로드
         self.update_trash_log()
+        self.plot_chart()
 
     def fetch_data(self):
         connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="030200",
-            database="boolean"
-        )
+                host="database-1.cpwy8c66woni.ap-northeast-2.rds.amazonaws.com",
+                port=3306,
+                user="admin",
+                password="lolmh0211",
+                database="DL_project"
+            )
         cursor = connection.cursor()
-        cursor.execute("SELECT time, class FROM trash")
+        cursor.execute("SELECT datetime, type_id FROM log")
         data = cursor.fetchall()
         connection.close()
         return data
@@ -46,7 +48,8 @@ class TrashSortingApp(QMainWindow):
         for row in data:
             time_str = row[0].strftime("%Y-%m-%d %H:%M:%S")  # 시간 포맷 변경
             class_name = row[1]
-            self.log_text_edit.append(f"{time_str}: {class_name}")  # 로그 형식으로 추가
+            labels = {1: '유리', 2: '캔', 3: '플라스틱'}
+            self.log_text_edit.append(f"{time_str}: {labels[class_name]}")  # 로그 형식으로 추가
 
     def plot_chart(self):
         data = self.fetch_data()
@@ -54,11 +57,18 @@ class TrashSortingApp(QMainWindow):
 
         counts = {}
         for row in data:
-            class_name = row[1]
-            counts[class_name] = counts.get(class_name, 0) + 1  # count 증가
+            class_id = row[1]  # type_id를 가져옴
+            counts[class_id] = counts.get(class_id, 0) + 1  # count 증가
 
-        set1.append(list(counts.values()))  # counts의 값을 추가
-        labels = list(counts.keys())  # 클래스 이름 추가
+        # 클래스 ID에 따라 이름 매핑
+        labels = {1: '유리', 2: '캔', 3: '플라스틱'}
+
+        # counts의 값을 추가
+        set1.append([counts.get(1, 0), counts.get(2, 0), counts.get(3, 0)]) 
+
+        # X축 레이블을 설정
+        axisX = QBarCategoryAxis()
+        axisX.append([labels[1], labels[2], labels[3]])  # 실제 레이블 추가
 
         series = QBarSeries()
         series.append(set1)
@@ -68,21 +78,20 @@ class TrashSortingApp(QMainWindow):
         chart.setTitle("쓰레기 분리수거 그래프")
         chart.setAnimationOptions(QChart.SeriesAnimations)
 
-        # X축 레이블 설정
-        axisX = QBarCategoryAxis()
-        axisX.append(labels)  # 실제 레이블을 추가
-        chart.setAxisX(axisX, series)
-
         # Y축 설정
         axisY = QValueAxis()
         axisY.setTitleText("수량")
         chart.setAxisY(axisY, series)
 
+        # X축과 연결
+        chart.setAxisX(axisX, series)
+
         self.chart_view.setChart(chart)
         self.chart_view.setRenderHint(QPainter.Antialiasing)
         self.update_trash_log()
 
-    def reset_chart(self):
+
+    def reset(self):
         # 확인 창 표시
         reply = QMessageBox.question(self, '확인', '모든 데이터를 삭제하시겠습니까?', 
                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -90,13 +99,14 @@ class TrashSortingApp(QMainWindow):
         if reply == QMessageBox.Yes:
             # 데이터베이스에서 모든 데이터 삭제
             connection = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="030200",
-                database="boolean"
+                host="database-1.cpwy8c66woni.ap-northeast-2.rds.amazonaws.com",
+                port=3306,
+                user="admin",
+                password="lolmh0211",
+                database="DL_project"
             )
             cursor = connection.cursor()
-            cursor.execute("DELETE FROM trash")  # trash 테이블의 모든 데이터 삭제
+            cursor.execute("DELETE FROM log")  # trash 테이블의 모든 데이터 삭제
             connection.commit()  # 변경 사항 커밋
             connection.close()
 
